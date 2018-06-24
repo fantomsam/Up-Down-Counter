@@ -1,1 +1,1 @@
-## Example for a counter with Up/Down inputs
+## VHDL Example for a Up/Down Counter 
