@@ -1,1 +1,1 @@
-Example for a counter with Up/Down inputs
+## Example for a counter with Up/Down inputs
