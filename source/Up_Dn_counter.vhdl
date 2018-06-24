@@ -8,67 +8,27 @@ entity Up_Dn_counter is
         rst : in std_logic;--reset input
         up : in std_logic;
         down : in std_logic;
-        period_cnt : out std_logic_vector(13 downto 0) 
+        C_out : out std_logic_vector(9 downto 0) 
        );
 end Up_Dn_counter;
 
-architecture behavioral of speed_counter is
-signal s_in_60_1: std_logic_vector(2 downto 0);
-signal p_pulse_cnt, n_pulse_cnt, n_pulse_cmp : std_logic_vector(period_cnt'range);
-signal p_counter_fl, n_counter_fl : std_logic;
+architecture behavioral of Up_Dn_counter is
+signal s_C_out : std_logic_vector(c_out'range);
 begin
     process(clk,rst)
     begin
       if(rst='1')then
-      	p_counter_fl<='0';
-      	n_counter_fl<='0';
-        s_in_60_1<=(others=>'0');
-        n_pulse_cnt <= (others=>'0');
-        p_pulse_cnt <= (others=>'0');
-        gap_det <= '0';
-        low_speed <= '0';
-        period_cnt <= (others=>'1');
-        n_pulse_cmp <= (others=>'0');
+				s_C_out <= (others =>'0');
       elsif (clk'event and clk ='1') then
-        s_in_60_1<=s_in_60_1 sll 1;
-        s_in_60_1(0)<=in_60_1;
-        if (s_in_60_1="110" and gap_det = '0') then
-        	period_cnt <= n_pulse_cnt+p_pulse_cnt+3;
-        elsif(s_in_60_1="100") then
-          n_pulse_cnt <= (others=>'0');
-          p_pulse_cnt <= (others=>'0');
-          n_counter_fl <= '1';
-          p_counter_fl<='0';
-          low_speed <= '0';
-        elsif(s_in_60_1="001") then
-          n_counter_fl <= '0';
-          p_counter_fl<='1';
-          n_pulse_cmp <= n_pulse_cnt + (n_pulse_cnt srl 1);
-        else 
-        	if(n_counter_fl='1' and p_counter_fl='0') then
-				 		if n_pulse_cnt = (n_pulse_cnt'range => '1') then
-				 			n_pulse_cnt <= (others=>'1');
-				 			low_speed <= '1';
-				 			period_cnt <= (others=>'1');
-				 		else
-				 			n_pulse_cnt <= n_pulse_cnt + 1;
-				 		end if;
-				  elsif(n_counter_fl='0' and p_counter_fl='1')then
-						if p_pulse_cnt = (p_pulse_cnt'range => '1') then
-				 			p_pulse_cnt <= (others=>'1');
-				 			low_speed <= '1';
-				 			period_cnt <= (others=>'1');
-				 		else
-				 			p_pulse_cnt <= p_pulse_cnt + 1;
-				 		end if;
-				  end if;
-        end if;
-        if(p_pulse_cnt > n_pulse_cmp) then
-					gap_det <= '1';
-				else
-					gap_det <= '0';
-				end if;
+      	if (up xor down) then
+		      if (down ='1'and s_C_out /=(s_C_out'range => '0')) then
+		    		s_C_out <= s_C_out - 1;
+		    	elsif (up = '1' and s_C_out /=(s_C_out'range => '1')) then
+		    		s_C_out <= s_C_out + 1;
+		    	end if;
+		    end if;
       end if;
     end process;
+    C_out <= s_C_out;
 end behavioral;
 
